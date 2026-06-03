@@ -161,6 +161,11 @@ function Dashboard() {
               ];
               const purpleGradient = purpleShades[i % purpleShades.length];
               
+              const isExam = /exam/i.test(s.title || "") || s.order_index === 11;
+              const linkProps = isExam
+                ? ({ to: "/exam-mode" } as const)
+                : ({ to: "/revise/$setId", params: { setId: s.id } } as const);
+
               return (
                 <Card key={s.id} className={`p-6 bg-gradient-to-br ${purpleGradient} text-card-foreground shadow-card-elev transition-all duration-300 border-2 hover:shadow-lg hover:scale-105 relative overflow-hidden group cursor-pointer`}>
                   <div className="absolute -top-4 -right-4 h-24 w-24 bg-gradient-to-br from-purple-400/10 to-transparent rounded-full blur-2xl group-hover:from-purple-400/20 transition" />
@@ -171,7 +176,11 @@ function Dashboard() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge className="bg-purple-600/70 text-white border-0">Topic {s.order_index}</Badge>
-                          {total > 0 && <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-600">{total} cards</Badge>}
+                          {isExam ? (
+                            <Badge variant="outline" className="text-xs border-amber-500/60 text-amber-500">EXAM Mode</Badge>
+                          ) : (
+                            total > 0 && <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-600">{total} cards</Badge>
+                          )}
                         </div>
                         <h3 className="font-bold text-lg md:text-xl text-foreground leading-tight">{s.title}</h3>
                       </div>
@@ -179,7 +188,7 @@ function Dashboard() {
 
                     <p className="text-sm text-foreground/80 leading-relaxed">{s.description}</p>
 
-                    {total > 0 && (
+                    {!isExam && total > 0 && (
                       <div className="pt-2 border-t border-purple-500/20 space-y-2">
                         <div className="flex items-center justify-between text-xs font-semibold text-foreground/70">
                           <div className="flex items-center gap-1">
@@ -200,12 +209,18 @@ function Dashboard() {
 
                     <div className="flex items-center justify-between pt-2 border-t border-purple-500/20">
                       <div className="text-xs text-foreground/70 font-medium">
-                        {!isFull && total > 0 && <span>First {s.free_card_limit} free</span>}
-                        {isFull && <span className="text-purple-600 font-semibold">✓ Full Access</span>}
+                        {isExam ? (
+                          <span className="text-amber-500 font-semibold">⚡ Full exam simulation</span>
+                        ) : (
+                          <>
+                            {!isFull && total > 0 && <span>First {s.free_card_limit} free</span>}
+                            {isFull && <span className="text-purple-600 font-semibold">✓ Full Access</span>}
+                          </>
+                        )}
                       </div>
                       <Button asChild size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0">
-                        <Link to="/revise/$setId" params={{ setId: s.id }}>
-                          Learn <ArrowRight className="h-3 w-3 ml-1" />
+                        <Link {...(linkProps as any)}>
+                          {isExam ? "Start Exam" : "Learn"} <ArrowRight className="h-3 w-3 ml-1" />
                         </Link>
                       </Button>
                     </div>
