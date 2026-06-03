@@ -165,6 +165,17 @@ function Landing() {
           </div>
         </section>
 
+        {/* ESPRESSO DIVIDER */}
+        <section className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center gap-4 max-w-md mx-auto">
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/40 to-amber-400/60" />
+            <Coffee className="h-5 w-5 text-amber-300" />
+            <span className="font-serif italic text-amber-200/80 text-sm whitespace-nowrap">prenditi un caffè, poi rivedi</span>
+            <Coffee className="h-5 w-5 text-amber-300" />
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-400/40 to-amber-400/60" />
+          </div>
+        </section>
+
         {/* FINAL CTA */}
         <section className="container mx-auto px-4 py-16 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white">Your future self is begging you to start.</h2>
@@ -172,10 +183,21 @@ function Landing() {
           <Button asChild size="lg" className="mt-6 bg-brand-gradient text-primary-foreground shadow-glow">
             <Link to="/request-access">Request Access</Link>
           </Button>
+          <p className="font-serif italic text-amber-200/70 mt-6 text-sm">
+            « Il sapere è il pane dell&rsquo;anima. » <span className="not-italic text-white/40">— proverbio italiano</span>
+          </p>
         </section>
       </main>
-      <footer className="border-t border-border/40 mt-6 py-8 text-center text-sm text-white/60">
-        © Industrial Automation. Automate · Control · Optimize · Innovate.
+      <footer className="border-t border-border/40 mt-6 py-10 text-center text-sm text-white/60">
+        <div className="inline-flex flex-col items-center gap-3">
+          <div className="inline-flex items-center gap-3 rounded-full border border-amber-400/30 bg-gradient-to-r from-amber-950/30 via-orange-950/20 to-amber-950/30 px-5 py-2">
+            <span className="font-serif italic text-amber-300/90">Forgiato a mano da</span>
+            <span className="font-display font-bold tracking-wider text-amber-200">Ultimate_Developers</span>
+            <span className="text-amber-400/60">·</span>
+            <span className="text-xs uppercase tracking-[0.25em] text-amber-300/70">Bottega Digitale · MMXXVI</span>
+          </div>
+          <p>© Industrial Automation. Automate · Control · Optimize · Innovate.</p>
+        </div>
       </footer>
     </div>
   );
