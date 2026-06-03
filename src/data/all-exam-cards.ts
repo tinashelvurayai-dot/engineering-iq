@@ -12,8 +12,13 @@ export interface ExamCard {
   topic: string;
 }
 
+import { MASSIVE_CARDS } from './massive-cards';
+import { qaCardsData } from './qa-cards-data';
+import { EXTENDED_EXAM_CARDS } from './extended-exam-cards';
+import { EXAM_MODE_CARDS } from './exam-cards';
+
 // All exam cards organized by topic for better performance
-export const ALL_EXAM_CARDS: ExamCard[] = [
+const CURATED_EXAM_CARDS: ExamCard[] = [
   // Industrial Automation Fundamentals
   {
     id: 'iaf-001',
