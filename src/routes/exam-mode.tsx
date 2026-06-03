@@ -115,16 +115,12 @@ function ExamMode() {
 
   const handleBookmark = () => {
     if (!currentCard) return;
-    if (isBookmarked) {
-      removeBookmark(currentCard.id);
-    } else {
-      addBookmark(currentCard.id);
-    }
+    toggleBookmark(currentCard.id);
   };
 
   const handleMastery = async () => {
     if (!currentCard) return;
-    markMastered(currentCard.id, !isMastered);
+    setLevel(currentCard.id, isMastered ? null : "got");
   };
 
   const handleReset = () => {
