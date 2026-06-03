@@ -29,16 +29,41 @@ function Dashboard() {
     if (!user) return;
     setFetching(true);
     (async () => {
-      const { data: setRows } = await supabase.from("topic_sets").select("*").order("order_index");
-      setSets(setRows || []);
-      const { data: idRows } = await supabase.from("cards").select("id, topic_set_id");
-      const map: Record<string, string[]> = {};
-      (idRows || []).forEach((r: any) => { (map[r.topic_set_id] ||= []).push(r.id); });
-      setSetCardIds(map);
-      setFetching(false);
+      try {
+        // Optimized parallel queries with explicit column selection
+        const [setResult, cardsResult, settingsResult] = await Promise.all([
+          supabase
+            .from("topic_sets")
+            .select("id, title, description, order_index, free_card_limit")
+            .order("order_index"),
+          supabase
+            .from("cards")
+            .select("id, topic_set_id"),
+          supabase
+            .from("app_settings")
+            .select("primary_agent_name")
+            .eq("id", true)
+            .maybeSingle()
+        ]);
+
+        setSets(setResult.data || []);
+        
+        const map: Record<string, string[]> = {};
+        (cardsResult.data || []).forEach((r: any) => {
+          (map[r.topic_set_id] ||= []).push(r.id);
+        });
+        setSetCardIds(map);
+        
+        if (settingsResult.data?.primary_agent_name) {
+          setAgentName(settingsResult.data.primary_agent_name);
+        }
+        
+        setFetching(false);
+      } catch (error) {
+        console.error("[v0] Error loading dashboard data:", error);
+        setFetching(false);
+      }
     })();
-    supabase.from("app_settings").select("primary_agent_name").eq("id", true).maybeSingle()
-      .then(({ data }) => { if (data?.primary_agent_name) setAgentName(data.primary_agent_name); });
   }, [user]);
 
   const isFull = profile?.access_level === "full";
