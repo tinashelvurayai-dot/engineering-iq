@@ -30,6 +30,12 @@ function Landing() {
           <div className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-3 py-1 text-xs text-secondary mb-6">
             <Zap className="h-3 w-3" /> Built from real National Diploma past papers
           </div>
+          <p className="font-serif italic text-amber-200/90 text-base md:text-lg mb-3 tracking-wide">
+            « La dolce revisione&nbsp;— studiare come un&rsquo;arte. »
+          </p>
+          <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70 mb-6">
+            Un&rsquo;edizione artigianale &middot; Italian-crafted study experience
+          </div>
           <img src={logo} alt="Industrial Automation logo" className="mx-auto h-28 w-auto mb-6 drop-shadow-[0_0_60px_rgba(99,102,241,0.55)]" />
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
             Stop re-reading notes.<br />
