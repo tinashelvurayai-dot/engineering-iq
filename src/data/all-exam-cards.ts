@@ -12,8 +12,13 @@ export interface ExamCard {
   topic: string;
 }
 
+import { MASSIVE_CARDS } from './massive-cards';
+import { qaCardsData } from './qa-cards-data';
+import { EXTENDED_EXAM_CARDS } from './extended-exam-cards';
+import { EXAM_MODE_CARDS } from './exam-cards';
+
 // All exam cards organized by topic for better performance
-export const ALL_EXAM_CARDS: ExamCard[] = [
+const CURATED_EXAM_CARDS: ExamCard[] = [
   // Industrial Automation Fundamentals
   {
     id: 'iaf-001',
@@ -424,6 +429,38 @@ export const ALL_EXAM_CARDS: ExamCard[] = [
     difficulty: 'easy'
   },
 ];
+
+type RawCard = { topic?: string; question: string; answer: string; difficulty?: string };
+function normalize(list: RawCard[], prefix: string): ExamCard[] {
+  return list.map((c, i) => {
+    const diff = (c.difficulty === 'easy' || c.difficulty === 'medium' || c.difficulty === 'hard')
+      ? c.difficulty : 'medium';
+    return {
+      id: `${prefix}-${String(i + 1).padStart(4, '0')}`,
+      topic: c.topic || 'General',
+      question: c.question,
+      answer: c.answer,
+      difficulty: diff as 'easy' | 'medium' | 'hard',
+    };
+  });
+}
+
+const MERGED: ExamCard[] = [
+  ...CURATED_EXAM_CARDS,
+  ...normalize(MASSIVE_CARDS as RawCard[], 'mas'),
+  ...normalize(qaCardsData as RawCard[], 'qa'),
+  ...normalize(EXTENDED_EXAM_CARDS as RawCard[], 'ext'),
+  ...normalize(EXAM_MODE_CARDS as unknown as RawCard[], 'em'),
+];
+
+// Dedup by question text (case-insensitive, trimmed)
+const _seen = new Set<string>();
+export const ALL_EXAM_CARDS: ExamCard[] = MERGED.filter(c => {
+  const k = c.question.trim().toLowerCase();
+  if (_seen.has(k)) return false;
+  _seen.add(k);
+  return true;
+});
 
 // Utility function to get cards by topic
 export function getCardsByTopic(topic: string): ExamCard[] {

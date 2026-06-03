@@ -29,8 +29,8 @@ function ExamMode() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [reviewedCards, setReviewedCards] = useState<Set<string>>(new Set());
   const [markedCards, setMarkedCards] = useState<Set<string>>(new Set());
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
-  const { mastery, markMastered } = useMastery();
+  const { bookmarks, toggle: toggleBookmark } = useBookmarks();
+  const { mastery, setLevel } = useMastery();
 
   useEffect(() => { if (!loading && !user) nav({ to: "/sign-in" }); }, [user, loading, nav]);
 
@@ -76,7 +76,7 @@ function ExamMode() {
 
   const currentCard = cards[currentIndex];
   const isBookmarked = currentCard && bookmarks.includes(currentCard.id);
-  const isMastered = currentCard && mastery[currentCard.id] === true;
+  const isMastered = currentCard ? mastery[currentCard.id] === "got" : false;
   const progress = useMemo(() => ({
     current: currentIndex + 1,
     total: cards.length,
@@ -115,16 +115,12 @@ function ExamMode() {
 
   const handleBookmark = () => {
     if (!currentCard) return;
-    if (isBookmarked) {
-      removeBookmark(currentCard.id);
-    } else {
-      addBookmark(currentCard.id);
-    }
+    toggleBookmark(currentCard.id);
   };
 
   const handleMastery = async () => {
     if (!currentCard) return;
-    markMastered(currentCard.id, !isMastered);
+    setLevel(currentCard.id, isMastered ? null : "got");
   };
 
   const handleReset = () => {
