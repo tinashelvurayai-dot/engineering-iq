@@ -29,12 +29,25 @@ function Revise() {
 
   useEffect(() => {
     (async () => {
-      const [setResult, cardsResult] = await Promise.all([
-        supabase.from("topic_sets").select("*").eq("id", setId).maybeSingle(),
-        supabase.from("cards").select("*").eq("topic_set_id", setId).order("order_index")
-      ]);
-      setSet(setResult.data);
-      setCards(cardsResult.data || []);
+      try {
+        const [setResult, cardsResult] = await Promise.all([
+          supabase
+            .from("topic_sets")
+            .select("*")
+            .eq("id", setId)
+            .maybeSingle(),
+          supabase
+            .from("cards")
+            .select("*")
+            .eq("topic_set_id", setId)
+            .order("order_index")
+            .limit(1000) // Prevent loading excessive cards
+        ]);
+        setSet(setResult.data);
+        setCards(cardsResult.data || []);
+      } catch (error) {
+        console.error("[v0] Error loading topic data:", error);
+      }
     })();
   }, [setId]);
 
