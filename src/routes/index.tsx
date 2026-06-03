@@ -35,7 +35,7 @@ function Landing() {
           </p>
           <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70 mb-6">
             Un&rsquo;edizione artigianale &middot; Italian-crafted study experience
-          </div>
+          </p>
           <img src={logo} alt="Industrial Automation logo" className="mx-auto h-28 w-auto mb-6 drop-shadow-[0_0_60px_rgba(99,102,241,0.55)]" />
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
             Stop re-reading notes.<br />
