@@ -29,8 +29,8 @@ function ExamMode() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [reviewedCards, setReviewedCards] = useState<Set<string>>(new Set());
   const [markedCards, setMarkedCards] = useState<Set<string>>(new Set());
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
-  const { mastery, markMastered } = useMastery();
+  const { bookmarks, toggle: toggleBookmark } = useBookmarks();
+  const { mastery, setLevel } = useMastery();
 
   useEffect(() => { if (!loading && !user) nav({ to: "/sign-in" }); }, [user, loading, nav]);
 
