@@ -20,6 +20,7 @@ function Revise() {
   const { hidden } = useScreenshotProtection();
   const [set, setSet] = useState<any>(null);
   const [cards, setCards] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const { mastery, setLevel } = useMastery();
@@ -28,33 +29,66 @@ function Revise() {
   useEffect(() => { if (!loading && !user) nav({ to: "/sign-in" }); }, [user, loading, nav]);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoadingData(true);
     (async () => {
       try {
         const [setResult, cardsResult] = await Promise.all([
-          supabase
-            .from("topic_sets")
-            .select("*")
-            .eq("id", setId)
-            .maybeSingle(),
-          supabase
-            .from("cards")
-            .select("*")
-            .eq("topic_set_id", setId)
-            .order("order_index")
-            .limit(1000) // Prevent loading excessive cards
+          supabase.from("topic_sets").select("*").eq("id", setId).maybeSingle(),
+          supabase.from("cards").select("*").eq("topic_set_id", setId).order("order_index").limit(1000),
         ]);
+        if (cancelled) return;
         setSet(setResult.data);
         setCards(cardsResult.data || []);
       } catch (error) {
         console.error("[v0] Error loading topic data:", error);
+      } finally {
+        if (!cancelled) setLoadingData(false);
       }
     })();
+    return () => { cancelled = true; };
   }, [setId]);
+
+  // Topic 11 ("EXAM Mode") has no DB cards — route to the dedicated exam-mode page
+  useEffect(() => {
+    if (!loadingData && set && cards.length === 0 && /exam/i.test(set.title || "")) {
+      nav({ to: "/exam-mode" });
+    }
+  }, [loadingData, set, cards, nav]);
 
   const summary = useMemo(() => summariseMastery(cards.map((c) => c.id), mastery), [cards, mastery]);
 
-  if (!set || cards.length === 0) {
+  if (loadingData) {
     return <div className="min-h-screen bg-hero"><AppHeader /><div className="container mx-auto p-10 text-muted-foreground">Loading…</div></div>;
+  }
+
+  if (!set) {
+    return (
+      <div className="min-h-screen bg-hero">
+        <AppHeader />
+        <div className="container mx-auto p-10 text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Topic not found</h2>
+          <Button asChild className="mt-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white"><Link to="/dashboard"><ArrowLeft className="h-4 w-4 mr-1" /> Back to Topics</Link></Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) {
+    return (
+      <div className="min-h-screen bg-hero">
+        <AppHeader />
+        <main className="container mx-auto px-4 py-10 max-w-2xl text-center">
+          <h1 className="text-3xl font-bold text-white mb-3">{set.title}</h1>
+          <p className="text-white/75 mb-6">{set.description}</p>
+          <Card className="p-10 bg-card text-card-foreground">
+            <h3 className="text-xl font-semibold">No cards in this topic yet</h3>
+            <p className="text-sm text-muted-foreground mt-2">Content is being prepared. Try another topic in the meantime.</p>
+            <Button asChild className="mt-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white"><Link to="/dashboard"><ArrowLeft className="h-4 w-4 mr-1" /> Back to All Topics</Link></Button>
+          </Card>
+        </main>
+      </div>
+    );
   }
 
   const isFull = profile?.access_level === "full";
