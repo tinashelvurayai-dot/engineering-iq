@@ -76,7 +76,7 @@ function ExamMode() {
 
   const currentCard = cards[currentIndex];
   const isBookmarked = currentCard && bookmarks.includes(currentCard.id);
-  const isMastered = currentCard && mastery[currentCard.id] === true;
+  const isMastered = currentCard ? mastery[currentCard.id] === "got" : false;
   const progress = useMemo(() => ({
     current: currentIndex + 1,
     total: cards.length,
