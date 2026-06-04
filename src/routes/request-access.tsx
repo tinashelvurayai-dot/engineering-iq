@@ -21,10 +21,8 @@ function RequestAccessPage() {
   const [done, setDone] = useState(false);
   const [agentName, setAgentName] = useState<string>("Contact admin for agent details");
 
-  useEffect(() => {
-    supabase.from("app_settings").select("primary_agent_name").eq("id", true).maybeSingle()
-      .then(({ data }) => { if (data?.primary_agent_name) setAgentName(data.primary_agent_name); });
-  }, []);
+  // Agent contact is shared privately after approval — not exposed publicly here.
+  useEffect(() => { void agentName; }, [agentName]);
 
   const send = async () => {
     if (!full_name.trim() || !whatsapp.trim() || !email.trim()) {

@@ -880,11 +880,19 @@ function SettingsPanel() {
   const [agent, setAgent] = useState("");
   const [solo, setSolo] = useState(5);
   const [pair, setPair] = useState(8);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
     const { data } = await supabase.from("app_settings").select("*").eq("id", true).maybeSingle();
-    if (data) { setAgent(data.primary_agent_name); setSolo(Number(data.solo_amount)); setPair(Number(data.pair_amount)); }
+    if (data) {
+      setAgent(data.primary_agent_name);
+      setSolo(Number(data.solo_amount));
+      setPair(Number(data.pair_amount));
+      setEmailSubject((data as any).access_email_subject || "");
+      setEmailBody((data as any).access_email_body || "");
+    }
   };
   useEffect(() => { load(); }, []);
 
@@ -892,21 +900,27 @@ function SettingsPanel() {
     if (!agent.trim()) return toast.error("Agent name required");
     setBusy(true);
     const { error } = await supabase.from("app_settings").upsert({
-      id: true, primary_agent_name: agent.trim(), solo_amount: solo, pair_amount: pair, updated_at: new Date().toISOString(),
+      id: true,
+      primary_agent_name: agent.trim(),
+      solo_amount: solo,
+      pair_amount: pair,
+      access_email_subject: emailSubject.trim() || "Your Industrial Automation Access Code",
+      access_email_body: emailBody,
+      updated_at: new Date().toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Settings updated — visible everywhere");
+    toast.success("Settings updated");
   };
 
   return (
     <div className="space-y-4 mt-4">
       <Card className="p-6 bg-card text-card-foreground">
         <h3 className="font-semibold mb-1">Public app settings</h3>
-        <p className="text-xs text-muted-foreground mb-4">Shown on home page, request-access page and user dashboard.</p>
+        <p className="text-xs text-muted-foreground mb-4">Agent contact is now shared only with signed-in users (security fix).</p>
         <div className="grid md:grid-cols-3 gap-3">
           <div className="md:col-span-3">
-            <Label>Authorised agent name</Label>
+            <Label>Authorised agent name &amp; contact</Label>
             <Input value={agent} onChange={e => setAgent(e.target.value)} maxLength={255} placeholder="e.g. John Doe (+263 77 123 4567)" />
           </div>
           <div>
@@ -918,8 +932,28 @@ function SettingsPanel() {
             <Input type="number" min={0} step="0.01" value={pair} onChange={e => setPair(+e.target.value)} />
           </div>
         </div>
-        <Button onClick={save} disabled={busy} className="mt-4 bg-brand-gradient"><Save className="h-4 w-4 mr-1" /> {busy ? "Saving…" : "Save settings"}</Button>
       </Card>
+
+      <Card className="p-6 bg-card text-card-foreground">
+        <h3 className="font-semibold mb-1">Access-code email template</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Sent through Supabase&rsquo;s built-in SMTP (same channel as signup verification). Use the placeholders{" "}
+          <code className="px-1 rounded bg-muted">{`{{full_name}}`}</code> and{" "}
+          <code className="px-1 rounded bg-muted">{`{{code}}`}</code> &mdash; they&rsquo;re replaced automatically when the email is sent.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <Label>Subject</Label>
+            <Input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} placeholder="Your Industrial Automation Access Code" />
+          </div>
+          <div>
+            <Label>Body</Label>
+            <Textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={12} placeholder={"Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n— Ultimate_Developers"} className="font-mono text-sm" />
+          </div>
+        </div>
+      </Card>
+
+      <Button onClick={save} disabled={busy} className="bg-brand-gradient"><Save className="h-4 w-4 mr-1" /> {busy ? "Saving…" : "Save all settings"}</Button>
     </div>
   );
 }

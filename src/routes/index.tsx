@@ -13,8 +13,11 @@ export const Route = createFileRoute("/")({ component: Landing });
 function Landing() {
   const [settings, setSettings] = useState<{ primary_agent_name: string; solo_amount: number; pair_amount: number } | null>(null);
   useEffect(() => {
-    supabase.from("app_settings").select("primary_agent_name, solo_amount, pair_amount").eq("id", true).maybeSingle()
-      .then(({ data }) => data && setSettings(data as any));
+    // Public-safe pricing only (agent contact is no longer exposed to anon visitors)
+    supabase.rpc("get_public_pricing").then(({ data }) => {
+      const row = Array.isArray(data) ? data[0] : null;
+      if (row) setSettings({ primary_agent_name: "", solo_amount: Number(row.solo_amount), pair_amount: Number(row.pair_amount) });
+    });
   }, []);
   const DEFAULT_AGENT_PLACEHOLDER = "Contact admin for agent details";
   const agentRaw = settings?.primary_agent_name?.trim();
@@ -38,8 +41,8 @@ function Landing() {
           </p>
           <img src={logo} alt="Industrial Automation logo" className="mx-auto h-28 w-auto mb-6 drop-shadow-[0_0_60px_rgba(99,102,241,0.55)]" />
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
-            Stop re-reading notes.<br />
-            <span className="text-brand-gradient">Start passing Automation.</span>
+            Master Automation.<br />
+            <span className="text-brand-gradient">Ace your exam with confidence.</span>
           </h1>
           <p className="mt-5 max-w-2xl mx-auto text-lg text-white/80">
             Every concept that has ever appeared in your exam, rebuilt as flip-cards your brain actually remembers.
