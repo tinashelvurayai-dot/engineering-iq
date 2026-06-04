@@ -156,6 +156,8 @@ export type Database = {
       }
       app_settings: {
         Row: {
+          access_email_body: string
+          access_email_subject: string
           id: boolean
           pair_amount: number
           primary_agent_name: string
@@ -163,6 +165,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_email_body?: string
+          access_email_subject?: string
           id?: boolean
           pair_amount?: number
           primary_agent_name?: string
@@ -170,6 +174,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_email_body?: string
+          access_email_subject?: string
           id?: boolean
           pair_amount?: number
           primary_agent_name?: string
@@ -361,6 +367,13 @@ export type Database = {
     Functions: {
       admin_exists: { Args: never; Returns: boolean }
       claim_admin: { Args: never; Returns: Json }
+      get_public_pricing: {
+        Args: never
+        Returns: {
+          pair_amount: number
+          solo_amount: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
