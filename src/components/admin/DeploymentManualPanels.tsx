@@ -49,13 +49,11 @@ export function DeploymentPanel() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-2">Supabase Edge Function secrets</h3>
+        <h3 className="font-semibold mb-2">Supabase service-role key (already configured)</h3>
         <p className="text-sm text-muted-foreground mb-2">
-          Set these in <strong>Supabase Dashboard → Project Settings → Edge Functions → Secrets</strong>:
+          Access-code emails are sent using Supabase&rsquo;s built-in SMTP (the same channel that delivers admin
+          signup verification). No third-party email provider or API key is required.
         </p>
-        <div className="space-y-2">
-          <CopyRow label="RESEND_API_KEY (optional — enables emailing access codes)" value="re_••••••••••••" />
-        </div>
         <p className="text-xs text-muted-foreground mt-2">
           For reference, the service-role key (used internally by edge functions, do NOT put in Vercel):
         </p>

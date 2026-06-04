@@ -28,7 +28,7 @@ export function ShareQRDialog({ trigger, className }: Props) {
     try {
       await navigator.share({
         title: "Industrial Automation – Past-paper flashcards",
-        text: "Stop re-reading notes. Start passing Automation.",
+        text: "Master Automation. Ace your exam with confidence.",
         url,
       });
     } catch {
