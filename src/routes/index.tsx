@@ -34,7 +34,7 @@ function Landing() {
             <Zap className="h-3 w-3" /> Built from real National Diploma past papers
           </div>
           <p className="font-serif italic text-amber-200/90 text-base md:text-lg mb-3 tracking-wide">
-            « La dolce revisione&nbsp;— studiare come un&rsquo;arte. »
+            « La dolce revisione&nbsp;- studiare come un&rsquo;arte. »
           </p>
           <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70 mb-6">
             Un&rsquo;edizione artigianale &middot; Italian-crafted study experience
@@ -187,7 +187,7 @@ function Landing() {
             <Link to="/request-access">Request Access</Link>
           </Button>
           <p className="font-serif italic text-amber-200/70 mt-6 text-sm">
-            « Il sapere è il pane dell&rsquo;anima. » <span className="not-italic text-white/40">— proverbio italiano</span>
+            « Il sapere è il pane dell&rsquo;anima. » <span className="not-italic text-white/40">- proverbio italiano</span>
           </p>
         </section>
       </main>
@@ -197,7 +197,7 @@ function Landing() {
             <span className="font-serif italic text-amber-300/90">Forgiato a mano da</span>
             <span className="font-display font-bold tracking-wider text-amber-200">Ultimate_Developers</span>
             <span className="text-amber-400/60">·</span>
-            <span className="text-xs uppercase tracking-[0.25em] text-amber-300/70">Bottega Digitale · MMXXVI</span>
+            <span className="text-xs uppercase tracking-[0.25em] text-amber-300/70">Bottega Digitale</span>
           </div>
           <p>© Industrial Automation. Automate · Control · Optimize · Innovate.</p>
         </div>

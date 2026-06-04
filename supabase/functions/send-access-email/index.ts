@@ -17,7 +17,6 @@ function applyTemplate(tpl: string, vars: Record<string, string>): string {
 }
 
 function bodyToHtml(body: string, code: string): string {
-  // Escape, then convert {{code}} block into a styled box if present in escaped form
   const escaped = escapeHtml(body);
   const withBox = escaped.replace(
     escapeHtml(code),
@@ -47,16 +46,35 @@ Deno.serve(async (req) => {
 
     const subjectTpl = settings?.access_email_subject || "Your Industrial Automation Access Code";
     const bodyTpl = settings?.access_email_body
-      || `Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n— Ultimate_Developers`;
+      || `Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n- Ultimate_Developers`;
 
     const vars = { full_name: fullName, code };
     const subject = applyTemplate(subjectTpl, vars);
     const renderedBody = applyTemplate(bodyTpl, vars);
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px;border:1px solid #1e293b;line-height:1.6;font-size:14px">${bodyToHtml(renderedBody, code)}</div>`;
 
-    // Use Supabase Auth's built-in email (same SMTP path as signup verification)
-    const { error } = await (supa.auth.admin as any).sendRawEmail({ email: to, html, subject });
-    if (error) throw error;
+    // Send via Resend (the same SMTP backbone Lovable Cloud uses for auth emails)
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendKey) throw new Error("Email service is not configured");
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Ultimate_Developers <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Resend API error: ${errText.slice(0, 300)}`);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

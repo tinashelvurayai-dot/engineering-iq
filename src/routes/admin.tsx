@@ -85,7 +85,7 @@ function RequestsPanel() {
       if (res.email.sent) {
         toast.success(`Approved. Code ${res.code} emailed.`);
       } else {
-        toast.warning(`Approved. Code ${res.code} — email NOT sent (${res.email.reason}). Copy & send manually.`);
+        toast.warning(`Approved. Code ${res.code} - email NOT sent (${res.email.reason}). Copy & send manually.`);
       }
       try { await navigator.clipboard?.writeText(res.code); } catch {}
       load();
@@ -112,10 +112,10 @@ function RequestsPanel() {
 
   return (
     <div className="space-y-4 mt-4">
-      <Card className="p-4 bg-amber-500/10 border-amber-500/40 text-card-foreground text-sm">
-        <p className="flex items-start gap-2"><AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
-          <span><strong>Approval flow:</strong> Agent calls you with the name of the person who paid. Find their pending
-          request below, click <strong>Approve</strong> — a unique access code is generated and emailed to them.
+      <Card className="p-4 bg-amber-500/10 border-amber-500/40 text-white text-sm">
+        <p className="flex items-start gap-2 text-white"><AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
+          <span className="text-white"><strong className="text-white">Approval flow:</strong> Agent calls you with the name of the person who paid. Find their pending
+          request below, click <strong className="text-white">Approve</strong> - a unique access code is generated and emailed to them.
           Their code is also visible here so you can copy/share manually if needed.</span></p>
       </Card>
       <div className="flex gap-2">
@@ -948,7 +948,7 @@ function SettingsPanel() {
           </div>
           <div>
             <Label>Body</Label>
-            <Textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={12} placeholder={"Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n— Ultimate_Developers"} className="font-mono text-sm" />
+            <Textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={12} placeholder={"Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n- Ultimate_Developers"} className="font-mono text-sm" />
           </div>
         </div>
       </Card>
