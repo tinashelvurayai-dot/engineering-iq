@@ -79,23 +79,39 @@ function RequestsPanel() {
   };
   useEffect(() => { load(); }, [filter]);
 
+  const applyTpl = (tpl: string, vars: Record<string, string>) =>
+    tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, k) => vars[k] ?? "");
+
+  const openGmailCompose = async (to: string, fullName: string, code: string) => {
+    const { data: s } = await supabase
+      .from("app_settings")
+      .select("access_email_subject, access_email_body")
+      .eq("id", true)
+      .maybeSingle();
+    const subjTpl = (s as any)?.access_email_subject || "Your Industrial Automation Access Code";
+    const bodyTpl = (s as any)?.access_email_body
+      || "Hi {{full_name}},\n\nYour access code is:\n\n{{code}}\n\n- Ultimate_Developers";
+    const vars = { full_name: fullName, code };
+    const subject = applyTpl(subjTpl, vars);
+    const body = applyTpl(bodyTpl, vars);
+    const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailto, "_blank");
+  };
+
   const approve = async (id: string) => {
     try {
       const res = await accessApi.approve({ request_id: id });
-      if (res.email.sent) {
-        toast.success(`Approved. Code ${res.code} emailed.`);
-      } else {
-        toast.warning(`Approved. Code ${res.code} - email NOT sent (${res.email.reason}). Copy & send manually.`);
-      }
       try { await navigator.clipboard?.writeText(res.code); } catch {}
+      toast.success(`Approved. Code ${res.code} copied. Opening Gmail...`);
+      await openGmailCompose(res.email, res.full_name, res.code);
       load();
     } catch (e: any) { toast.error(e?.message || "Approval failed"); }
   };
   const resend = async (id: string) => {
     try {
       const res = await accessApi.resend({ request_id: id });
-      if (res.email.sent) toast.success("Code re-emailed");
-      else toast.warning(`Email not sent: ${res.email.reason}`);
+      await openGmailCompose(res.email, res.full_name, res.code);
+      toast.success("Opening Gmail with code...");
     } catch (e: any) { toast.error(e?.message || "Resend failed"); }
   };
   const reject = async (id: string) => {
@@ -115,8 +131,8 @@ function RequestsPanel() {
       <Card className="p-4 bg-amber-500/10 border-amber-500/40 text-white text-sm">
         <p className="flex items-start gap-2 text-white"><AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
           <span className="text-white"><strong className="text-white">Approval flow:</strong> Agent calls you with the name of the person who paid. Find their pending
-          request below, click <strong className="text-white">Approve</strong> - a unique access code is generated and emailed to them.
-          Their code is also visible here so you can copy/share manually if needed.</span></p>
+          request below, click <strong className="text-white">Approve & send</strong> - a unique access code is generated, copied to your clipboard,
+          and your device&rsquo;s default email app (e.g. Gmail) opens with the message pre-filled. Just hit Send.</span></p>
       </Card>
       <div className="flex gap-2">
         <Button size="sm" variant={filter === "pending" ? "default" : "outline"} onClick={() => setFilter("pending")}>Pending</Button>
@@ -148,12 +164,12 @@ function RequestsPanel() {
             <div className="flex gap-2 flex-wrap">
               {r.status === "pending" && (
                 <>
-                  <Button size="sm" onClick={() => approve(r.id)} className="bg-brand-gradient"><Check className="h-4 w-4 mr-1" /> Approve & email</Button>
+                  <Button size="sm" onClick={() => approve(r.id)} className="bg-brand-gradient"><Check className="h-4 w-4 mr-1" /> Approve & send</Button>
                   <Button size="sm" variant="outline" onClick={() => reject(r.id)}><X className="h-4 w-4 mr-1" /> Reject</Button>
                 </>
               )}
               {r.status === "approved" && r.generated_code && (
-                <Button size="sm" variant="outline" onClick={() => resend(r.id)}><Mail className="h-4 w-4 mr-1" /> Resend email</Button>
+                <Button size="sm" variant="outline" onClick={() => resend(r.id)}><Mail className="h-4 w-4 mr-1" /> Open email</Button>
               )}
               <Button size="sm" variant="ghost" onClick={() => del(r.id)}><Trash2 className="h-4 w-4" /></Button>
             </div>
@@ -937,9 +953,9 @@ function SettingsPanel() {
       <Card className="p-6 bg-card text-card-foreground">
         <h3 className="font-semibold mb-1">Access-code email template</h3>
         <p className="text-xs text-muted-foreground mb-4">
-          Sent through Supabase&rsquo;s built-in SMTP (same channel as signup verification). Use the placeholders{" "}
+          When you approve a request, your device&rsquo;s email app (Gmail, Mail, etc.) opens with this subject and body pre-filled. Use the placeholders{" "}
           <code className="px-1 rounded bg-muted">{`{{full_name}}`}</code> and{" "}
-          <code className="px-1 rounded bg-muted">{`{{code}}`}</code> &mdash; they&rsquo;re replaced automatically when the email is sent.
+          <code className="px-1 rounded bg-muted">{`{{code}}`}</code> - they are replaced automatically before the email opens.
         </p>
         <div className="space-y-3">
           <div>
