@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, ShieldOff, ShieldCheck, Copy, Download, Search, Edit3, Save, X, Check, Send, Mail, AlertTriangle, Upload } from "lucide-react";
+import { Plus, Trash2, ShieldOff, ShieldCheck, Copy, Download, Search, Edit3, Save, X, Check, Send, Mail, AlertTriangle, Upload, Sparkles, Inbox, KeyRound, BookOpen, Users as UsersIcon, MessageSquare, CreditCard, UserCheck, Settings as SettingsIcon, HelpCircle } from "lucide-react";
 import { accessApi } from "@/lib/access-api";
 import { UserManualPanel } from "@/components/admin/DeploymentManualPanels";
 
@@ -38,19 +38,29 @@ function Admin() {
   return (
     <div className="min-h-screen bg-hero">
       <AppHeader showBack backTo="/dashboard" />
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-white">Admin dashboard</h1>
+      <main className="container mx-auto px-4 py-10">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-secondary" />
+            <span className="text-xs uppercase tracking-wider text-secondary font-semibold">La Bottega - Admin Control</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Admin dashboard</h1>
+          <p className="text-white/70 mt-2 max-w-2xl">
+            Manage requests, codes, content and users. Everything you need, organised the same way the student dashboard is - calm, clear, fast.
+          </p>
+        </div>
+
         <Tabs defaultValue="requests">
-          <TabsList className="flex flex-wrap h-auto">
-            <TabsTrigger value="requests">Access Requests</TabsTrigger>
-            <TabsTrigger value="codes">Access Codes</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="tickets">Messages</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="agents">Agents</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="manual">User Manual</TabsTrigger>
+          <TabsList className="flex flex-wrap h-auto gap-1 bg-card/40 backdrop-blur p-1.5 rounded-xl border border-border/60">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><Inbox className="h-4 w-4 mr-1.5" />Requests</TabsTrigger>
+            <TabsTrigger value="codes" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><KeyRound className="h-4 w-4 mr-1.5" />Codes</TabsTrigger>
+            <TabsTrigger value="content" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><BookOpen className="h-4 w-4 mr-1.5" />Content</TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><UsersIcon className="h-4 w-4 mr-1.5" />Users</TabsTrigger>
+            <TabsTrigger value="tickets" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><MessageSquare className="h-4 w-4 mr-1.5" />Messages</TabsTrigger>
+            <TabsTrigger value="payments" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><CreditCard className="h-4 w-4 mr-1.5" />Payments</TabsTrigger>
+            <TabsTrigger value="agents" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><UserCheck className="h-4 w-4 mr-1.5" />Agents</TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><SettingsIcon className="h-4 w-4 mr-1.5" />Settings</TabsTrigger>
+            <TabsTrigger value="manual" className="data-[state=active]:bg-brand-gradient data-[state=active]:text-white"><HelpCircle className="h-4 w-4 mr-1.5" />Manual</TabsTrigger>
           </TabsList>
           <TabsContent value="requests"><RequestsPanel /></TabsContent>
           <TabsContent value="codes"><CodesPanel /></TabsContent>
