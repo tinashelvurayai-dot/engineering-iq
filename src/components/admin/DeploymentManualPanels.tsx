@@ -51,8 +51,9 @@ export function DeploymentPanel() {
       <div>
         <h3 className="font-semibold mb-2">Supabase service-role key (already configured)</h3>
         <p className="text-sm text-muted-foreground mb-2">
-          Access-code emails are sent using Supabase&rsquo;s built-in SMTP (the same channel that delivers admin
-          signup verification). No third-party email provider or API key is required.
+          Access-code emails are sent <strong>by you, the admin</strong>, from your device&rsquo;s default email app (Gmail, Mail, etc.).
+          When you click Approve, the code is generated server-side and your email app opens with the message pre-filled.
+          No third-party email provider or API key is required.
         </p>
         <p className="text-xs text-muted-foreground mt-2">
           For reference, the service-role key (used internally by edge functions, do NOT put in Vercel):

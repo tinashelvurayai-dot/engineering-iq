@@ -30,38 +30,6 @@ export async function requireAdmin(req: Request) {
   return { supa, userId: userRes.user.id };
 }
 
-export function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c]!,
-  );
-}
-
-export async function sendCodeEmail(to: string, fullName: string, code: string) {
-  try {
-    // Send email via edge function that uses Supabase's native SMTP
-    const res = await fetch(
-      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-access-email`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ to, fullName, code }),
-      }
-    );
-
-    if (!res.ok) {
-      const body = await res.text();
-      return { sent: false, reason: `Email send failed: ${body.slice(0, 200)}` };
-    }
-
-    return { sent: true };
-  } catch (e) {
-    return { sent: false, reason: (e as Error).message };
-  }
-}
-
 export function randCode() {
   const seg = () => Math.random().toString(36).slice(2, 6).toUpperCase();
   return `AUT-${seg()}-${seg()}`;
