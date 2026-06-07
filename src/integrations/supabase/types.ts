@@ -97,7 +97,11 @@ export type Database = {
           full_name: string
           generated_code: string | null
           id: string
+          is_pair: boolean
           notes: string | null
+          second_email: string | null
+          second_full_name: string | null
+          second_whatsapp: string | null
           status: Database["public"]["Enums"]["request_status"]
           synthetic_email: string | null
           user_id: string | null
@@ -111,7 +115,11 @@ export type Database = {
           full_name: string
           generated_code?: string | null
           id?: string
+          is_pair?: boolean
           notes?: string | null
+          second_email?: string | null
+          second_full_name?: string | null
+          second_whatsapp?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           synthetic_email?: string | null
           user_id?: string | null
@@ -125,7 +133,11 @@ export type Database = {
           full_name?: string
           generated_code?: string | null
           id?: string
+          is_pair?: boolean
           notes?: string | null
+          second_email?: string | null
+          second_full_name?: string | null
+          second_whatsapp?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           synthetic_email?: string | null
           user_id?: string | null
@@ -374,6 +386,7 @@ export type Database = {
           solo_amount: number
         }[]
       }
+      get_public_user_count: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
