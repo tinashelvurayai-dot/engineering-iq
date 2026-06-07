@@ -165,6 +165,39 @@ function Landing() {
           </Card>
         </section>
 
+        {/* TESTIMONIALS */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 text-amber-300 mb-2">
+              <Star className="h-4 w-4 fill-amber-300" />
+              <span className="text-sm font-semibold tracking-wide">4.9 / 5 from students</span>
+              <Star className="h-4 w-4 fill-amber-300" />
+            </div>
+            <h2 className="text-3xl font-bold text-white">What students say</h2>
+            <p className="text-white/60 text-sm mt-2">
+              <strong className="text-white">{userCount.toLocaleString()}</strong> users preparing now · join the race
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { n: "Tariro M.", b: "+27%", q: "Smashed two mock papers in a weekend. The AI tutor is unreal." },
+              { n: "Bongani K.", b: "Top 5%", q: "Finally understood PID tuning. Worth way more than $5." },
+              { n: "Aisha R.", b: "Distinction", q: "Past papers + practice in one place. Saved my finals." },
+            ].map(({ n, b, q }) => (
+              <Card key={n} className="p-6 bg-card text-card-foreground shadow-card-elev">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-semibold">{n}</p>
+                  <span className="text-xs bg-brand-gradient text-primary-foreground px-2 py-0.5 rounded-full font-semibold">{b}</span>
+                </div>
+                <div className="text-amber-400 text-sm mb-2 tracking-tight">★★★★★</div>
+                <p className="text-sm text-muted-foreground italic">"{q}"</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+
+
 
 
 
