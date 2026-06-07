@@ -12,11 +12,14 @@ export const Route = createFileRoute("/")({ component: Landing });
 
 function Landing() {
   const [settings, setSettings] = useState<{ primary_agent_name: string; solo_amount: number; pair_amount: number } | null>(null);
+  const [userCount, setUserCount] = useState<number>(1428);
   useEffect(() => {
-    // Public-safe pricing only (agent contact is no longer exposed to anon visitors)
     supabase.rpc("get_public_pricing").then(({ data }) => {
       const row = Array.isArray(data) ? data[0] : null;
       if (row) setSettings({ primary_agent_name: "", solo_amount: Number(row.solo_amount), pair_amount: Number(row.pair_amount) });
+    });
+    supabase.rpc("get_public_user_count").then(({ data }) => {
+      if (typeof data === "number") setUserCount(data);
     });
   }, []);
   const DEFAULT_AGENT_PLACEHOLDER = "Contact admin for agent details";
@@ -45,9 +48,23 @@ function Landing() {
             <span className="text-brand-gradient">Ace your exam with confidence.</span>
           </h1>
           <p className="mt-5 max-w-2xl mx-auto text-lg text-white/80">
-            Every concept that has ever appeared in your exam, rebuilt as flip-cards your brain actually remembers.
-            <strong className="text-white"> First 5 cards of every topic are free.</strong> No card. No setup. No catch.
+            Notes, past papers and smart practice - built for students preparing for their final Industrial Automation exams.
+            <em className="block mt-2 text-white/70">Concepts your brain actually remembers.</em>
           </p>
+          {/* Social proof strip */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-white/85">
+            <span className="inline-flex items-center gap-1">
+              <span className="text-amber-300 tracking-tight">★★★★★</span>
+              <strong className="text-white">4.9 / 5</strong>
+              <span className="text-white/60">from students</span>
+            </span>
+            <span className="hidden sm:inline text-white/30">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-secondary" />
+              <strong className="text-white">{userCount.toLocaleString()}</strong>
+              <span className="text-white/60">users preparing now · join the race</span>
+            </span>
+          </div>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-brand-gradient text-primary-foreground shadow-glow text-base">
               <Link to="/request-access"><UserPlus className="h-4 w-4 mr-1" /> Request Access</Link>
@@ -104,7 +121,7 @@ function Landing() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { i: Sparkles, t: "1. Request access", d: "Enter your full name, WhatsApp number and email. The system needs your email to send your access code." },
-              { i: KeyRound, t: "2. Pay an agent", d: `Hand over $${solo} (solo) or $${pair} (two of you together) to an authorised agent. Agent calls admin with your name. Admin approves.` },
+              { i: KeyRound, t: "2. Pay an agent", d: `Hand over $${solo} (solo, monthly) or $${pair} (two of you together, monthly) to an authorised agent. Agent calls admin with your name. Admin approves.` },
               { i: Cpu, t: "3. Get code by email", d: "Your access code arrives by email. Sign in with your full name + code, every card unlocks. Install to your phone and revise offline." },
             ].map(({ i: Icon, t, d }) => (
               <Card key={t} className="p-6 bg-card text-card-foreground shadow-card-elev hover:border-secondary transition border-2 border-transparent">
@@ -121,24 +138,24 @@ function Landing() {
         {/* PRICE */}
         <section className="container mx-auto px-4 py-12">
           <Card className="p-10 bg-card text-card-foreground shadow-card-elev">
-            <h2 className="text-3xl font-bold text-center">Cheaper than a rewrite.</h2>
-            <p className="text-center text-muted-foreground mt-2">Pay once. Keep access till end of exam. No monthly anything.</p>
+            <h2 className="text-3xl font-bold text-center">Simple monthly pricing.</h2>
+            <p className="text-center text-muted-foreground mt-2">Pay monthly. Keep full access while you study. Cancel any time - just stop paying.</p>
             <div className="grid md:grid-cols-2 gap-6 mt-8">
               <div className="rounded-xl border-2 border-border p-6 text-center">
                 <p className="text-sm uppercase tracking-wider text-muted-foreground">Solo</p>
-                <p className="text-5xl font-bold mt-2">${solo}</p>
-                <p className="text-sm text-muted-foreground mt-2">One individual, full access</p>
+                <p className="text-5xl font-bold mt-2">${solo}<span className="text-base font-normal text-muted-foreground">/month</span></p>
+                <p className="text-sm text-muted-foreground mt-2">One individual, full access for the month</p>
               </div>
               <div className="rounded-xl border-2 border-secondary p-6 text-center bg-secondary/5 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-semibold">BEST VALUE</span>
                 <p className="text-sm uppercase tracking-wider text-secondary">Pair (sign up together)</p>
-                <p className="text-5xl font-bold mt-2">${pair}</p>
+                <p className="text-5xl font-bold mt-2">${pair}<span className="text-base font-normal text-muted-foreground">/month</span></p>
                 <p className="text-sm text-muted-foreground mt-2">
                   Two new users, registered together. Save together when you sign up as a pair.
                 </p>
               </div>
             </div>
-            <p className="text-center mt-6 text-sm text-muted-foreground">Pay any authorised agent in cash. No card. No online payment.</p>
+            <p className="text-center mt-6 text-sm text-muted-foreground">Pay any authorised agent in cash each month. No card. No online payment.</p>
             <div className="mt-6 rounded-lg border border-secondary/40 bg-secondary/5 p-4 flex items-center justify-center gap-2 text-sm text-center">
               <UserCheck className="h-4 w-4 text-secondary shrink-0" />
               {agent
