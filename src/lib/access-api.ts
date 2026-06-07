@@ -29,8 +29,15 @@ export async function callFn<T = any>(name: string, body: Record<string, unknown
 }
 
 export const accessApi = {
-  submit: (input: { full_name: string; whatsapp: string; email: string }) =>
-    callFn<{ ok: true }>("access-submit", input),
+  submit: (input: {
+    full_name: string;
+    whatsapp: string;
+    email: string;
+    is_pair?: boolean;
+    second_full_name?: string;
+    second_whatsapp?: string;
+    second_email?: string;
+  }) => callFn<{ ok: true }>("access-submit", input),
   signIn: (input: { full_name: string; code: string }) =>
     callFn<{ email: string; password: string }>("access-signin", input),
   approve: (input: { request_id: string }) =>
