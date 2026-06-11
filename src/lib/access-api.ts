@@ -41,9 +41,9 @@ export const accessApi = {
   signIn: (input: { full_name: string; code: string }) =>
     callFn<{ email: string; password: string }>("access-signin", input),
   approve: (input: { request_id: string }) =>
-    callFn<{ code: string; email: string; full_name: string }>("access-approve", input),
+    callFn<ApprovalResult>("access-approve", input),
   resend: (input: { request_id: string }) =>
-    callFn<{ code: string; email: string; full_name: string }>("access-resend", input),
+    callFn<ApprovalResult>("access-resend", input),
   reject: (input: { request_id: string }) =>
     callFn<{ ok: true }>("access-reject", input),
 };
