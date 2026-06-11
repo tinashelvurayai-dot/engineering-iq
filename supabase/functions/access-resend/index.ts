@@ -10,7 +10,15 @@ Deno.serve(async (req) => {
     if (!row) throw new Error("Request not found");
     if (!row.email) throw new Error("This request has no email");
     if (!row.generated_code) throw new Error("This request has no code yet - approve first");
-    return new Response(JSON.stringify({ code: row.generated_code, email: row.email, full_name: row.full_name }), {
+    return new Response(JSON.stringify({
+      code: row.generated_code,
+      email: row.email,
+      full_name: row.full_name,
+      is_pair: !!row.is_pair,
+      second_code: row.second_generated_code,
+      second_email: row.second_email,
+      second_full_name: row.second_full_name,
+    }), {
       headers: { ...cors, "content-type": "application/json" },
     });
   } catch (e) {
