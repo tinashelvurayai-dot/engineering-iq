@@ -108,20 +108,36 @@ function RequestsPanel() {
     window.open(mailto, "_blank");
   };
 
+  const sendCodes = async (
+    res: { email: string; full_name: string; code: string; is_pair?: boolean; second_email?: string | null; second_full_name?: string | null; second_code?: string | null }
+  ) => {
+    await openGmailCompose(res.email, res.full_name, res.code);
+    if (res.is_pair && res.second_email && res.second_code) {
+      // Small delay so the second window/tab isn't blocked by popup throttling
+      await new Promise((r) => setTimeout(r, 400));
+      await openGmailCompose(res.second_email, res.second_full_name || "", res.second_code);
+    }
+  };
+
   const approve = async (id: string) => {
     try {
       const res = await accessApi.approve({ request_id: id });
-      try { await navigator.clipboard?.writeText(res.code); } catch {}
-      toast.success(`Approved. Code ${res.code} copied. Opening Gmail...`);
-      await openGmailCompose(res.email, res.full_name, res.code);
+      try {
+        const clip = res.is_pair && res.second_code
+          ? `${res.full_name}: ${res.code}\n${res.second_full_name}: ${res.second_code}`
+          : res.code;
+        await navigator.clipboard?.writeText(clip);
+      } catch {}
+      toast.success(res.is_pair ? "Pair approved. Both codes copied. Opening Gmail x2..." : `Approved. Code ${res.code} copied. Opening Gmail...`);
+      await sendCodes(res);
       load();
     } catch (e: any) { toast.error(e?.message || "Approval failed"); }
   };
   const resend = async (id: string) => {
     try {
       const res = await accessApi.resend({ request_id: id });
-      await openGmailCompose(res.email, res.full_name, res.code);
-      toast.success("Opening Gmail with code...");
+      await sendCodes(res);
+      toast.success(res.is_pair ? "Opening Gmail for both pair members..." : "Opening Gmail with code...");
     } catch (e: any) { toast.error(e?.message || "Resend failed"); }
   };
   const reject = async (id: string) => {
