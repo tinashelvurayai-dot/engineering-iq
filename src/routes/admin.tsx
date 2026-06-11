@@ -17,10 +17,6 @@ import { UserManualPanel } from "@/components/admin/DeploymentManualPanels";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
 
-function randCode() {
-  const seg = () => Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `AUT-${seg()}-${seg()}`;
-}
 
 function Admin() {
   const { user, isAdmin, loading } = useAuth();
