@@ -28,6 +28,16 @@ export async function callFn<T = any>(name: string, body: Record<string, unknown
   return data as T;
 }
 
+export type ApprovalResult = {
+  code: string;
+  email: string;
+  full_name: string;
+  is_pair?: boolean;
+  second_code?: string | null;
+  second_email?: string | null;
+  second_full_name?: string | null;
+};
+
 export const accessApi = {
   submit: (input: {
     full_name: string;
