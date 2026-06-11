@@ -225,11 +225,6 @@ function RequestsPanel() {
 
 function CodesPanel() {
   const [codes, setCodes] = useState<any[]>([]);
-  const [seats, setSeats] = useState(1);
-  const [amount, setAmount] = useState(5);
-  const [agent, setAgent] = useState("");
-  const [assigned, setAssigned] = useState("");
-  const [bulk, setBulk] = useState(1);
   const [search, setSearch] = useState("");
 
   const load = async () => {
@@ -237,18 +232,6 @@ function CodesPanel() {
     setCodes(data || []);
   };
   useEffect(() => { load(); }, []);
-
-  const generate = async () => {
-    const assignedList = assigned.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
-    const rows = Array.from({ length: Math.max(1, bulk) }, () => ({
-      code: randCode(), total_seats: seats, amount, agent_name: agent || null, assigned_emails: assignedList,
-    }));
-    const { error } = await supabase.from("access_codes").insert(rows);
-    if (error) return toast.error(error.message);
-    toast.success(`Generated ${rows.length} code${rows.length > 1 ? "s" : ""}`);
-    setAgent(""); setAssigned("");
-    load();
-  };
 
   const del = async (id: string) => {
     if (!confirm("Delete code?")) return;
@@ -275,17 +258,24 @@ function CodesPanel() {
 
   return (
     <div className="space-y-6 mt-4">
-      <Card className="p-6 bg-card text-card-foreground">
-        <h3 className="font-semibold mb-3">Generate code(s)</h3>
-        <div className="grid md:grid-cols-5 gap-3">
-          <div><Label>Quantity</Label><Input type="number" min={1} max={100} value={bulk} onChange={e => setBulk(+e.target.value)} /></div>
-          <div><Label>Seats per code</Label><Input type="number" min={1} value={seats} onChange={e => setSeats(+e.target.value)} /></div>
-          <div><Label>Amount ($)</Label><Input type="number" min={0} step="0.01" value={amount} onChange={e => setAmount(+e.target.value)} /></div>
-          <div><Label>Agent name</Label><Input value={agent} onChange={e => setAgent(e.target.value)} /></div>
-          <div><Label>Assigned emails (comma)</Label><Input value={assigned} onChange={e => setAssigned(e.target.value)} placeholder="optional" /></div>
-        </div>
-        <Button onClick={generate} className="mt-4 bg-brand-gradient"><Plus className="h-4 w-4 mr-1" /> Generate</Button>
+      <Card className="p-4 bg-secondary/10 border-secondary/40 text-card-foreground text-sm">
+        <p className="text-sm">
+          <strong>Codes are auto-generated.</strong> Every approval in the Requests tab issues a unique code
+          per user (two for pair signups) and binds it to that account. No manual generation needed.
+        </p>
       </Card>
+
+      <Card className="p-4 bg-card text-card-foreground">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search code, agent, email..." className="pl-9" />
+          </div>
+          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+          <div className="text-sm text-muted-foreground">{filtered.length} of {codes.length} codes</div>
+        </div>
+      </Card>
+
 
       <Card className="p-4 bg-card text-card-foreground">
         <div className="flex flex-wrap items-center gap-3">
