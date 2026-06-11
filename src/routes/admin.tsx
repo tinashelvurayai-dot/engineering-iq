@@ -17,10 +17,6 @@ import { UserManualPanel } from "@/components/admin/DeploymentManualPanels";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
 
-function randCode() {
-  const seg = () => Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `AUT-${seg()}-${seg()}`;
-}
 
 function Admin() {
   const { user, isAdmin, loading } = useAuth();
@@ -108,20 +104,36 @@ function RequestsPanel() {
     window.open(mailto, "_blank");
   };
 
+  const sendCodes = async (
+    res: { email: string; full_name: string; code: string; is_pair?: boolean; second_email?: string | null; second_full_name?: string | null; second_code?: string | null }
+  ) => {
+    await openGmailCompose(res.email, res.full_name, res.code);
+    if (res.is_pair && res.second_email && res.second_code) {
+      // Small delay so the second window/tab isn't blocked by popup throttling
+      await new Promise((r) => setTimeout(r, 400));
+      await openGmailCompose(res.second_email, res.second_full_name || "", res.second_code);
+    }
+  };
+
   const approve = async (id: string) => {
     try {
       const res = await accessApi.approve({ request_id: id });
-      try { await navigator.clipboard?.writeText(res.code); } catch {}
-      toast.success(`Approved. Code ${res.code} copied. Opening Gmail...`);
-      await openGmailCompose(res.email, res.full_name, res.code);
+      try {
+        const clip = res.is_pair && res.second_code
+          ? `${res.full_name}: ${res.code}\n${res.second_full_name}: ${res.second_code}`
+          : res.code;
+        await navigator.clipboard?.writeText(clip);
+      } catch {}
+      toast.success(res.is_pair ? "Pair approved. Both codes copied. Opening Gmail x2..." : `Approved. Code ${res.code} copied. Opening Gmail...`);
+      await sendCodes(res);
       load();
     } catch (e: any) { toast.error(e?.message || "Approval failed"); }
   };
   const resend = async (id: string) => {
     try {
       const res = await accessApi.resend({ request_id: id });
-      await openGmailCompose(res.email, res.full_name, res.code);
-      toast.success("Opening Gmail with code...");
+      await sendCodes(res);
+      toast.success(res.is_pair ? "Opening Gmail for both pair members..." : "Opening Gmail with code...");
     } catch (e: any) { toast.error(e?.message || "Resend failed"); }
   };
   const reject = async (id: string) => {
@@ -157,16 +169,33 @@ function RequestsPanel() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-semibold">{r.full_name}</h4>
                 <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "outline"}>{r.status}</Badge>
+                {r.is_pair && <Badge variant="secondary">Pair signup</Badge>}
               </div>
               <p className="text-sm text-muted-foreground mt-1">📱 <a className="underline" href={`https://wa.me/${r.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">{r.whatsapp}</a></p>
               {r.email && <p className="text-sm text-muted-foreground">✉️ <a href={`mailto:${r.email}`} className="underline">{r.email}</a></p>}
+              {r.is_pair && (
+                <div className="mt-3 p-3 rounded bg-muted/30 border border-border/60 text-sm">
+                  <p className="font-semibold text-xs uppercase tracking-wider text-muted-foreground mb-1">Pair partner</p>
+                  <p>{r.second_full_name}</p>
+                  {r.second_whatsapp && <p className="text-muted-foreground">📱 <a className="underline" href={`https://wa.me/${r.second_whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">{r.second_whatsapp}</a></p>}
+                  {r.second_email && <p className="text-muted-foreground">✉️ <a href={`mailto:${r.second_email}`} className="underline">{r.second_email}</a></p>}
+                </div>
+              )}
               {r.generated_code && (
                 <div className="mt-3 p-3 rounded bg-secondary/10 border border-secondary/40">
-                  <p className="text-xs text-secondary uppercase tracking-wider font-semibold mb-1">Access code</p>
+                  <p className="text-xs text-secondary uppercase tracking-wider font-semibold mb-1">Access code{r.is_pair ? "s" : ""}</p>
                   <div className="flex items-center gap-2">
                     <code className="text-lg font-mono font-bold">{r.generated_code}</code>
                     <Button size="sm" variant="ghost" onClick={() => copy(r.generated_code)}><Copy className="h-3 w-3" /></Button>
+                    <span className="text-xs text-muted-foreground">· {r.full_name}</span>
                   </div>
+                  {r.second_generated_code && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-lg font-mono font-bold">{r.second_generated_code}</code>
+                      <Button size="sm" variant="ghost" onClick={() => copy(r.second_generated_code)}><Copy className="h-3 w-3" /></Button>
+                      <span className="text-xs text-muted-foreground">· {r.second_full_name}</span>
+                    </div>
+                  )}
                 </div>
               )}
               <p className="text-xs text-muted-foreground mt-2">Submitted {new Date(r.created_at).toLocaleString()}</p>
@@ -192,11 +221,6 @@ function RequestsPanel() {
 
 function CodesPanel() {
   const [codes, setCodes] = useState<any[]>([]);
-  const [seats, setSeats] = useState(1);
-  const [amount, setAmount] = useState(5);
-  const [agent, setAgent] = useState("");
-  const [assigned, setAssigned] = useState("");
-  const [bulk, setBulk] = useState(1);
   const [search, setSearch] = useState("");
 
   const load = async () => {
@@ -204,18 +228,6 @@ function CodesPanel() {
     setCodes(data || []);
   };
   useEffect(() => { load(); }, []);
-
-  const generate = async () => {
-    const assignedList = assigned.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
-    const rows = Array.from({ length: Math.max(1, bulk) }, () => ({
-      code: randCode(), total_seats: seats, amount, agent_name: agent || null, assigned_emails: assignedList,
-    }));
-    const { error } = await supabase.from("access_codes").insert(rows);
-    if (error) return toast.error(error.message);
-    toast.success(`Generated ${rows.length} code${rows.length > 1 ? "s" : ""}`);
-    setAgent(""); setAssigned("");
-    load();
-  };
 
   const del = async (id: string) => {
     if (!confirm("Delete code?")) return;
@@ -242,17 +254,24 @@ function CodesPanel() {
 
   return (
     <div className="space-y-6 mt-4">
-      <Card className="p-6 bg-card text-card-foreground">
-        <h3 className="font-semibold mb-3">Generate code(s)</h3>
-        <div className="grid md:grid-cols-5 gap-3">
-          <div><Label>Quantity</Label><Input type="number" min={1} max={100} value={bulk} onChange={e => setBulk(+e.target.value)} /></div>
-          <div><Label>Seats per code</Label><Input type="number" min={1} value={seats} onChange={e => setSeats(+e.target.value)} /></div>
-          <div><Label>Amount ($)</Label><Input type="number" min={0} step="0.01" value={amount} onChange={e => setAmount(+e.target.value)} /></div>
-          <div><Label>Agent name</Label><Input value={agent} onChange={e => setAgent(e.target.value)} /></div>
-          <div><Label>Assigned emails (comma)</Label><Input value={assigned} onChange={e => setAssigned(e.target.value)} placeholder="optional" /></div>
-        </div>
-        <Button onClick={generate} className="mt-4 bg-brand-gradient"><Plus className="h-4 w-4 mr-1" /> Generate</Button>
+      <Card className="p-4 bg-secondary/10 border-secondary/40 text-card-foreground text-sm">
+        <p className="text-sm">
+          <strong>Codes are auto-generated.</strong> Every approval in the Requests tab issues a unique code
+          per user (two for pair signups) and binds it to that account. No manual generation needed.
+        </p>
       </Card>
+
+      <Card className="p-4 bg-card text-card-foreground">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search code, agent, email..." className="pl-9" />
+          </div>
+          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+          <div className="text-sm text-muted-foreground">{filtered.length} of {codes.length} codes</div>
+        </div>
+      </Card>
+
 
       <Card className="p-4 bg-card text-card-foreground">
         <div className="flex flex-wrap items-center gap-3">
@@ -823,8 +842,6 @@ function TicketsPanel() {
 
 function PaymentsPanel() {
   const [reqs, setReqs] = useState<any[]>([]);
-  const [email, setEmail] = useState(""); const [email2, setEmail2] = useState("");
-  const [amount, setAmount] = useState(5); const [agent, setAgent] = useState("");
 
   const load = async () => {
     const { data } = await supabase.from("payment_requests").select("*").order("created_at", { ascending: false });
@@ -832,40 +849,69 @@ function PaymentsPanel() {
   };
   useEffect(() => { load(); }, []);
 
-  const add = async () => {
-    if (!email) return toast.error("Email required");
-    await supabase.from("payment_requests").insert({ student_email: email, student_email_2: email2 || null, amount, agent_name: agent || null });
-    setEmail(""); setEmail2(""); setAgent(""); load();
-  };
+  const total = reqs.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+  const thisMonth = reqs.filter(r => {
+    const d = new Date(r.created_at);
+    return `${d.getFullYear()}-${d.getMonth()}` === monthKey;
+  });
+  const monthTotal = thisMonth.reduce((s, r) => s + Number(r.amount || 0), 0);
 
   return (
     <div className="space-y-4 mt-4">
-      <Card className="p-6 bg-card text-card-foreground">
-        <h3 className="font-semibold mb-3">Log payment notification</h3>
-        <div className="grid md:grid-cols-4 gap-3">
-          <Input placeholder="Student email" value={email} onChange={e => setEmail(e.target.value)} />
-          <Input placeholder="Second email (if pair)" value={email2} onChange={e => setEmail2(e.target.value)} />
-          <Input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(+e.target.value)} />
-          <Input placeholder="Agent" value={agent} onChange={e => setAgent(e.target.value)} />
-        </div>
-        <Button onClick={add} className="mt-3 bg-brand-gradient">Log</Button>
+      <Card className="p-4 bg-secondary/10 border-secondary/40 text-card-foreground text-sm">
+        <p>
+          <strong>Auto-logged.</strong> Every approval in <em>Requests</em> writes a payment record automatically
+          using the current pricing (solo / pair) and the time the user submitted their request. Nothing to type here.
+        </p>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Total revenue</p>
+          <p className="text-3xl font-bold mt-1">${total.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{reqs.length} payment{reqs.length === 1 ? "" : "s"}</p>
+        </Card>
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">This month</p>
+          <p className="text-3xl font-bold mt-1">${monthTotal.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{thisMonth.length} payment{thisMonth.length === 1 ? "" : "s"}</p>
+        </Card>
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Average</p>
+          <p className="text-3xl font-bold mt-1">${reqs.length ? (total / reqs.length).toFixed(2) : "0.00"}</p>
+          <p className="text-xs text-muted-foreground mt-1">per payment</p>
+        </Card>
+      </div>
+
       <Card className="p-0 bg-card text-card-foreground overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-muted/40"><tr><th className="text-left p-3">Email(s)</th><th className="text-left p-3">Amount</th><th className="text-left p-3">Agent</th><th className="text-left p-3">Status</th></tr></thead>
+          <thead className="bg-muted/40"><tr>
+            <th className="text-left p-3">When</th>
+            <th className="text-left p-3">Email(s)</th>
+            <th className="text-left p-3">Amount</th>
+            <th className="text-left p-3">Agent</th>
+            <th className="text-left p-3">Status</th>
+          </tr></thead>
           <tbody>{reqs.map(r => (
             <tr key={r.id} className="border-t border-border/40">
+              <td className="p-3 whitespace-nowrap text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
               <td className="p-3">{r.student_email}{r.student_email_2 ? `, ${r.student_email_2}` : ""}</td>
-              <td className="p-3">${r.amount}</td>
-              <td className="p-3">{r.agent_name || "_"}</td>
-              <td className="p-3"><Badge variant="outline">{r.status}</Badge></td>
+              <td className="p-3 font-semibold">${r.amount}</td>
+              <td className="p-3">{r.agent_name || "-"}</td>
+              <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "outline"}>{r.status}</Badge></td>
             </tr>
-          ))}</tbody>
+          ))}
+          {reqs.length === 0 && (
+            <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">No payments yet. Approve a request to log the first one.</td></tr>
+          )}</tbody>
         </table>
       </Card>
     </div>
   );
 }
+
 
 function AgentsPanel() {
   const [agents, setAgents] = useState<any[]>([]);

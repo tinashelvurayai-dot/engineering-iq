@@ -99,8 +99,12 @@ export type Database = {
           id: string
           is_pair: boolean
           notes: string | null
+          second_auto_password: string | null
           second_email: string | null
           second_full_name: string | null
+          second_generated_code: string | null
+          second_synthetic_email: string | null
+          second_user_id: string | null
           second_whatsapp: string | null
           status: Database["public"]["Enums"]["request_status"]
           synthetic_email: string | null
@@ -117,8 +121,12 @@ export type Database = {
           id?: string
           is_pair?: boolean
           notes?: string | null
+          second_auto_password?: string | null
           second_email?: string | null
           second_full_name?: string | null
+          second_generated_code?: string | null
+          second_synthetic_email?: string | null
+          second_user_id?: string | null
           second_whatsapp?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           synthetic_email?: string | null
@@ -135,8 +143,12 @@ export type Database = {
           id?: string
           is_pair?: boolean
           notes?: string | null
+          second_auto_password?: string | null
           second_email?: string | null
           second_full_name?: string | null
+          second_generated_code?: string | null
+          second_synthetic_email?: string | null
+          second_user_id?: string | null
           second_whatsapp?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           synthetic_email?: string | null
@@ -239,6 +251,7 @@ export type Database = {
           generated_code: string | null
           id: string
           notes: string | null
+          request_id: string | null
           status: Database["public"]["Enums"]["payment_status"]
           student_email: string
           student_email_2: string | null
@@ -250,6 +263,7 @@ export type Database = {
           generated_code?: string | null
           id?: string
           notes?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_email: string
           student_email_2?: string | null
@@ -261,11 +275,20 @@ export type Database = {
           generated_code?: string | null
           id?: string
           notes?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_email?: string
           student_email_2?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "access_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

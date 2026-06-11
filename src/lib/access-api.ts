@@ -28,6 +28,16 @@ export async function callFn<T = any>(name: string, body: Record<string, unknown
   return data as T;
 }
 
+export type ApprovalResult = {
+  code: string;
+  email: string;
+  full_name: string;
+  is_pair?: boolean;
+  second_code?: string | null;
+  second_email?: string | null;
+  second_full_name?: string | null;
+};
+
 export const accessApi = {
   submit: (input: {
     full_name: string;
@@ -41,9 +51,9 @@ export const accessApi = {
   signIn: (input: { full_name: string; code: string }) =>
     callFn<{ email: string; password: string }>("access-signin", input),
   approve: (input: { request_id: string }) =>
-    callFn<{ code: string; email: string; full_name: string }>("access-approve", input),
+    callFn<ApprovalResult>("access-approve", input),
   resend: (input: { request_id: string }) =>
-    callFn<{ code: string; email: string; full_name: string }>("access-resend", input),
+    callFn<ApprovalResult>("access-resend", input),
   reject: (input: { request_id: string }) =>
     callFn<{ ok: true }>("access-reject", input),
 };
