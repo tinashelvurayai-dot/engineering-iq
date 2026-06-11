@@ -14,3 +14,7 @@ verify_jwt = false
 
 [functions.access-reject]
 verify_jwt = false
+
+[functions.admin-cleanup-users]
+verify_jwt = false
+
