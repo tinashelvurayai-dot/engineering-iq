@@ -846,8 +846,6 @@ function TicketsPanel() {
 
 function PaymentsPanel() {
   const [reqs, setReqs] = useState<any[]>([]);
-  const [email, setEmail] = useState(""); const [email2, setEmail2] = useState("");
-  const [amount, setAmount] = useState(5); const [agent, setAgent] = useState("");
 
   const load = async () => {
     const { data } = await supabase.from("payment_requests").select("*").order("created_at", { ascending: false });
@@ -855,40 +853,69 @@ function PaymentsPanel() {
   };
   useEffect(() => { load(); }, []);
 
-  const add = async () => {
-    if (!email) return toast.error("Email required");
-    await supabase.from("payment_requests").insert({ student_email: email, student_email_2: email2 || null, amount, agent_name: agent || null });
-    setEmail(""); setEmail2(""); setAgent(""); load();
-  };
+  const total = reqs.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+  const thisMonth = reqs.filter(r => {
+    const d = new Date(r.created_at);
+    return `${d.getFullYear()}-${d.getMonth()}` === monthKey;
+  });
+  const monthTotal = thisMonth.reduce((s, r) => s + Number(r.amount || 0), 0);
 
   return (
     <div className="space-y-4 mt-4">
-      <Card className="p-6 bg-card text-card-foreground">
-        <h3 className="font-semibold mb-3">Log payment notification</h3>
-        <div className="grid md:grid-cols-4 gap-3">
-          <Input placeholder="Student email" value={email} onChange={e => setEmail(e.target.value)} />
-          <Input placeholder="Second email (if pair)" value={email2} onChange={e => setEmail2(e.target.value)} />
-          <Input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(+e.target.value)} />
-          <Input placeholder="Agent" value={agent} onChange={e => setAgent(e.target.value)} />
-        </div>
-        <Button onClick={add} className="mt-3 bg-brand-gradient">Log</Button>
+      <Card className="p-4 bg-secondary/10 border-secondary/40 text-card-foreground text-sm">
+        <p>
+          <strong>Auto-logged.</strong> Every approval in <em>Requests</em> writes a payment record automatically
+          using the current pricing (solo / pair) and the time the user submitted their request. Nothing to type here.
+        </p>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Total revenue</p>
+          <p className="text-3xl font-bold mt-1">${total.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{reqs.length} payment{reqs.length === 1 ? "" : "s"}</p>
+        </Card>
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">This month</p>
+          <p className="text-3xl font-bold mt-1">${monthTotal.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{thisMonth.length} payment{thisMonth.length === 1 ? "" : "s"}</p>
+        </Card>
+        <Card className="p-5 bg-card text-card-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Average</p>
+          <p className="text-3xl font-bold mt-1">${reqs.length ? (total / reqs.length).toFixed(2) : "0.00"}</p>
+          <p className="text-xs text-muted-foreground mt-1">per payment</p>
+        </Card>
+      </div>
+
       <Card className="p-0 bg-card text-card-foreground overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-muted/40"><tr><th className="text-left p-3">Email(s)</th><th className="text-left p-3">Amount</th><th className="text-left p-3">Agent</th><th className="text-left p-3">Status</th></tr></thead>
+          <thead className="bg-muted/40"><tr>
+            <th className="text-left p-3">When</th>
+            <th className="text-left p-3">Email(s)</th>
+            <th className="text-left p-3">Amount</th>
+            <th className="text-left p-3">Agent</th>
+            <th className="text-left p-3">Status</th>
+          </tr></thead>
           <tbody>{reqs.map(r => (
             <tr key={r.id} className="border-t border-border/40">
+              <td className="p-3 whitespace-nowrap text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
               <td className="p-3">{r.student_email}{r.student_email_2 ? `, ${r.student_email_2}` : ""}</td>
-              <td className="p-3">${r.amount}</td>
-              <td className="p-3">{r.agent_name || "_"}</td>
-              <td className="p-3"><Badge variant="outline">{r.status}</Badge></td>
+              <td className="p-3 font-semibold">${r.amount}</td>
+              <td className="p-3">{r.agent_name || "-"}</td>
+              <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "outline"}>{r.status}</Badge></td>
             </tr>
-          ))}</tbody>
+          ))}
+          {reqs.length === 0 && (
+            <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">No payments yet. Approve a request to log the first one.</td></tr>
+          )}</tbody>
         </table>
       </Card>
     </div>
   );
 }
+
 
 function AgentsPanel() {
   const [agents, setAgents] = useState<any[]>([]);
