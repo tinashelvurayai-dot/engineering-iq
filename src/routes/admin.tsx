@@ -177,12 +177,38 @@ function RequestsPanel() {
               <p className="text-sm text-muted-foreground mt-1">📱 <a className="underline" href={`https://wa.me/${r.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">{r.whatsapp}</a></p>
               {r.email && <p className="text-sm text-muted-foreground">✉️ <a href={`mailto:${r.email}`} className="underline">{r.email}</a></p>}
               {r.generated_code && (
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="font-semibold">{r.full_name}</h4>
+                <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "outline"}>{r.status}</Badge>
+                {r.is_pair && <Badge variant="secondary">Pair signup</Badge>}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">📱 <a className="underline" href={`https://wa.me/${r.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">{r.whatsapp}</a></p>
+              {r.email && <p className="text-sm text-muted-foreground">✉️ <a href={`mailto:${r.email}`} className="underline">{r.email}</a></p>}
+              {r.is_pair && (
+                <div className="mt-3 p-3 rounded bg-muted/30 border border-border/60 text-sm">
+                  <p className="font-semibold text-xs uppercase tracking-wider text-muted-foreground mb-1">Pair partner</p>
+                  <p>{r.second_full_name}</p>
+                  {r.second_whatsapp && <p className="text-muted-foreground">📱 <a className="underline" href={`https://wa.me/${r.second_whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">{r.second_whatsapp}</a></p>}
+                  {r.second_email && <p className="text-muted-foreground">✉️ <a href={`mailto:${r.second_email}`} className="underline">{r.second_email}</a></p>}
+                </div>
+              )}
+              {r.generated_code && (
                 <div className="mt-3 p-3 rounded bg-secondary/10 border border-secondary/40">
-                  <p className="text-xs text-secondary uppercase tracking-wider font-semibold mb-1">Access code</p>
+                  <p className="text-xs text-secondary uppercase tracking-wider font-semibold mb-1">Access code{r.is_pair ? "s" : ""}</p>
                   <div className="flex items-center gap-2">
                     <code className="text-lg font-mono font-bold">{r.generated_code}</code>
                     <Button size="sm" variant="ghost" onClick={() => copy(r.generated_code)}><Copy className="h-3 w-3" /></Button>
+                    <span className="text-xs text-muted-foreground">· {r.full_name}</span>
                   </div>
+                  {r.second_generated_code && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-lg font-mono font-bold">{r.second_generated_code}</code>
+                      <Button size="sm" variant="ghost" onClick={() => copy(r.second_generated_code)}><Copy className="h-3 w-3" /></Button>
+                      <span className="text-xs text-muted-foreground">· {r.second_full_name}</span>
+                    </div>
+                  )}
                 </div>
               )}
               <p className="text-xs text-muted-foreground mt-2">Submitted {new Date(r.created_at).toLocaleString()}</p>
