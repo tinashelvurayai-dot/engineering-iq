@@ -273,16 +273,6 @@ function CodesPanel() {
       </Card>
 
 
-      <Card className="p-4 bg-card text-card-foreground">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search code, agent, email..." className="pl-9" />
-          </div>
-          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
-          <div className="text-sm text-muted-foreground">{filtered.length} of {codes.length} codes</div>
-        </div>
-      </Card>
 
       <Card className="p-0 bg-card text-card-foreground overflow-hidden">
         <table className="w-full text-sm">
@@ -709,6 +699,8 @@ function UsersPanel() {
 
   return (
     <div className="space-y-4 mt-4">
+      <AdminAddUserCard onAdded={load} />
+      <AdminCleanupCard onDone={load} />
       <Card className="p-4 bg-card text-card-foreground">
         <div className="relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
