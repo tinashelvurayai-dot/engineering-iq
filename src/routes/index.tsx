@@ -76,7 +76,7 @@ function Landing() {
 
           </div>
           <div className="mt-6 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-xs text-white/70">
-            <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-secondary" /> No subscription</span>
+            <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-secondary" /> Cancel any month</span>
             <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-secondary" /> No exam dates, ever</span>
             <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-secondary" /> Works offline once installed</span>
           </div>
