@@ -18,3 +18,7 @@ verify_jwt = false
 [functions.admin-cleanup-users]
 verify_jwt = false
 
+[functions.admin-add-user]
+verify_jwt = false
+
+

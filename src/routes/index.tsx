@@ -207,7 +207,7 @@ function Landing() {
             {[
               { i: BookOpen, t: "Real exam content", d: "Five full past paper sets, model answers verified." },
               { i: Download, t: "Install on phone", d: "Add to home screen, revise even offline." },
-              { i: Mail, t: "Real human support", d: "industrialautomation@gmail.com" },
+              { i: Mail, t: "Real human support", d: "examgeniuspro@gmail.com" },
             ].map(({ i: Icon, t, d }) => (
               <Card key={t} className="p-4 bg-card text-card-foreground">
                 <Icon className="h-5 w-5 text-secondary mb-2" />
