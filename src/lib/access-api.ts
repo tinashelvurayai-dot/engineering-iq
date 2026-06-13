@@ -56,4 +56,7 @@ export const accessApi = {
     callFn<ApprovalResult>("access-resend", input),
   reject: (input: { request_id: string }) =>
     callFn<{ ok: true }>("access-reject", input),
+  adminAddUser: (input: { full_name: string; email: string; access_level?: "free" | "full" }) =>
+    callFn<{ code: string; email: string; full_name: string }>("admin-add-user", input),
+  cleanupUsers: () => callFn<{ removed_count: number }>("admin-cleanup-users", {}),
 };
