@@ -38,5 +38,5 @@ export function randPassword() {
   return crypto.randomUUID() + "Aa1!";
 }
 export function synthEmail() {
-  return `user-${crypto.randomUUID()}@auto.industrialautomation.app`;
+  return `user-${crypto.randomUUID()}@auto.examgeniuspro.app`;
 }
