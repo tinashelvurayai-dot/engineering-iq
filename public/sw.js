@@ -1,6 +1,6 @@
 // Service Worker for offline support
-const CACHE_NAME = "ia-v1";
-const OFFLINE_URL = "/";
+const CACHE_NAME = "ia-v2";
+const OFFLINE_URL = "/index.html";
 
 // Files to cache immediately on install
 const PRECACHE_URLS = [
