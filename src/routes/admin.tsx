@@ -1021,3 +1021,91 @@ function SettingsPanel() {
     </div>
   );
 }
+
+function AdminAddUserCard({ onAdded }: { onAdded: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [level, setLevel] = useState<"full" | "free">("full");
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState<{ code: string; email: string } | null>(null);
+
+  const add = async () => {
+    if (!name.trim() || !email.trim()) return toast.error("Name and email required");
+    setBusy(true);
+    try {
+      const r = await accessApi.adminAddUser({ full_name: name.trim(), email: email.trim(), access_level: level });
+      setLast({ code: r.code, email: r.email });
+      navigator.clipboard?.writeText(r.code);
+      toast.success(`User created. Code ${r.code} copied.`);
+      setName(""); setEmail("");
+      onAdded();
+    } catch (e: any) {
+      toast.error(e?.message || "Failed");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <Card className="p-4 bg-card text-card-foreground border-secondary/40">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between text-left">
+        <div className="flex items-center gap-2">
+          <Plus className="h-4 w-4 text-secondary" />
+          <span className="font-semibold">Add user directly</span>
+          <span className="text-xs text-muted-foreground">- bypass payment flow, issue a code instantly</span>
+        </div>
+        <span className="text-xs text-muted-foreground">{open ? "Hide" : "Open"}</span>
+      </button>
+      {open && (
+        <div className="mt-4 grid sm:grid-cols-2 gap-3">
+          <div><Label>Full name</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
+          <div><Label>Contact email (for your records)</Label><Input value={email} onChange={e => setEmail(e.target.value)} /></div>
+          <div>
+            <Label>Access level</Label>
+            <select value={level} onChange={e => setLevel(e.target.value as any)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
+              <option value="full">Full</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <Button onClick={add} disabled={busy} className="bg-brand-gradient w-full"><Plus className="h-4 w-4 mr-1" /> {busy ? "Creating…" : "Create user + code"}</Button>
+          </div>
+          {last && (
+            <div className="sm:col-span-2 text-sm bg-secondary/10 border border-secondary/40 rounded p-3 flex items-center gap-2">
+              <Check className="h-4 w-4 text-secondary" />
+              Created <strong>{last.email}</strong> with code <code className="font-mono bg-background/40 px-2 py-0.5 rounded">{last.code}</code>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function AdminCleanupCard({ onDone }: { onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm] = useState(0);
+  const run = async () => {
+    if (confirm < 2) { setConfirm(c => c + 1); setTimeout(() => setConfirm(0), 2000); return; }
+    setBusy(true);
+    try {
+      const r = await accessApi.cleanupUsers();
+      toast.success(`Removed ${r.removed_count} user(s).`);
+      setConfirm(0); onDone();
+    } catch (e: any) { toast.error(e?.message || "Cleanup failed"); }
+    finally { setBusy(false); }
+  };
+  return (
+    <Card className="p-4 bg-card text-card-foreground border-destructive/40">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <span className="font-semibold">Cleanup: remove all users except admin + Portia</span>
+        </div>
+        <Button variant="destructive" size="sm" onClick={run} disabled={busy}>
+          {busy ? "Cleaning…" : confirm === 0 ? "Run cleanup" : confirm === 1 ? "Tap to confirm" : "Tap once more"}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
